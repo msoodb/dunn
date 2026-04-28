@@ -1,0 +1,38 @@
+
+## Manually Editing gcloud Config Files in Linux
+
+1. Google Cloud stores configuration files in:
+ ~/.config/gcloud/
+
+2. Key files:
+
+	Active configuration: ~/.config/gcloud/active_config
+    Configurations (one per config): ~/.config/gcloud/configurations/config_[CONFIG_NAME]
+    Credentials (OAuth tokens): ~/.config/gcloud/credentials.db
+
+
+## using gcloud 
+
+1. List All Configurations
+```sh
+	gcloud config configurations list
+```
+
+2. Create/Activate/Delete a New Configuration
+```sh
+	gcloud config configurations create [CONFIG_NAME]
+	gcloud config configurations activate [CONFIG_NAME]
+	gcloud config configurations delete [CONFIG_NAME]
+```
+
+3. Set Account/Default Project for Configuration
+```sh
+	gcloud auth login [YOUR_EMAIL]
+	gcloud config set project [PROJECT_ID]
+```
+
+4. View Current Configuration
+```sh
+	gcloud config list
+	gcloud auth list
+```
