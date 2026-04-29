@@ -1,8 +1,23 @@
 #!/bin/bash
 
 # ----------------------------------
-#   JS Download with Unique Filenames
+#  Bulk URL Downloader (JS/Asset Collector)
 # ----------------------------------
+# Description:
+# This script downloads a list of URLs from a file using curl with
+# browser-like headers. Each file is saved with a unique hash-based
+# filename to prevent overwriting duplicates. Failed downloads are
+# logged separately for later review.
+#
+# Features:
+# - Reads URLs from input file (one per line)
+# - Adds browser User-Agent and referer headers
+# - Generates unique filenames using MD5 hash of URL
+# - Prevents file overwriting
+# - Retries failed downloads automatically
+# - Logs failed URLs for debugging
+# ----------------------------------
+
 
 URL_FILE=$1
 OUTPUT_DIR="${URL_FILE}_dir/"
