@@ -61,3 +61,16 @@ https://brezular.com/2020/01/02/how-to-configure-burpsuite-to-use-tor-as-proxy/
     127.0.0.1
     9050
 
+
+# Burp UserAgent
+https://github.com/codewatchorg/Burp-UserAgent
+- Update or set the User-Agent header in all requests to a specific value.
+
+# Proxy → Match and replace
+- Request Header
+- globally modify every request leaving Burp so the User-Agent always includes HackerOne
+- Match: ^User-Agent:\s*(.*)$
+- Replace: User-Agent: $1 HackerOne
+
+# Project -> task -> Resource pool
+- Automated web scans of Hilton websites should be limited to a maximum of 100 requests/minute for each website.

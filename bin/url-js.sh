@@ -22,6 +22,6 @@ fi
 grep -Ei '\.js(\?.*)?$' "$URLS" > urls-js.txt
 
 # Remove JS lines from the original file
-grep -vEi '\.js(\?.*)?$' "$URLS" > temp.txt && mv temp.txt "$URLS"
+# grep -vEi '\.js(\?.*)?$' "$URLS" > temp.txt && mv temp.txt "$URLS"
 
-echo "JS URLs have been moved to urls-js.txt and removed from $URLS."
+echo "JS URLs have been saved to urls-js.txt."

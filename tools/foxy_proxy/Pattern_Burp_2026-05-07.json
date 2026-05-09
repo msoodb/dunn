@@ -1,0 +1,9 @@
+[
+  {
+    "include": "include",
+    "type": "wildcard",
+    "title": "all URLs",
+    "pattern": "*://*/",
+    "active": true
+  }
+]
