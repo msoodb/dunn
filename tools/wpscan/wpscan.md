@@ -22,3 +22,15 @@ curl -X POST https://$TARGET/xmlrpc.php  -H "Content-Type: application/xml"  -H 
 # WPScan is a great automatic tool (you can dockerise)
 docker pull wpscanteam/wpscan
 docker run -it --rm wpscanteam/wpscan --url https://yourblog.com [options]
+
+
+wpscan \
+  --url https://www.myndr.nl/ \
+  --force \
+  --random-user-agent \
+  --wp-content-dir wp-content \
+  --wp-plugins-dir wp-content/plugins \
+  --output wpscan.token \
+  --format cli-no-color \
+  --api-token $WP_TOKEN \
+  -e vp,vt,u

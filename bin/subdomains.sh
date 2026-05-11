@@ -43,10 +43,12 @@ set -euo pipefail
 #   - GITHUB_TOKEN (for github-subdomains)
 # --------------------------------------------------
 
+# “What hosts exist?”
+
 OUTPUT_DIR="subdomains"
 OUTPUT_FILE="$OUTPUT_DIR/subdomains.txt"
-RESOLVED_FILE="$OUTPUT_DIR/subdomains_resolved.txt"
-ALIVE_FILE="$OUTPUT_DIR/subdomains_alive.txt"
+# RESOLVED_FILE="$OUTPUT_DIR/subdomains_resolved.txt"
+# ALIVE_FILE="$OUTPUT_DIR/subdomains_alive.txt"
 
 mkdir -p "$OUTPUT_DIR"
 > "$OUTPUT_FILE"
@@ -115,24 +117,24 @@ sort -u "$OUTPUT_FILE" -o "$OUTPUT_FILE"
 # -------------------------
 # DNS resolution (NEW)
 # -------------------------
-echo "[*] Resolving subdomains with dnsx..."
+#echo "[*] Resolving subdomains with dnsx..."
 
-dnsx -l "$OUTPUT_FILE" -silent -resp -nc > "$RESOLVED_FILE"
+#dnsx -l "$OUTPUT_FILE" -silent -resp -nc > "$RESOLVED_FILE"
 
 # -------------------------
 # Extract alive hosts (NEW)
 # -------------------------
-echo "[*] Extracting alive subdomains..."
+#echo "[*] Extracting alive subdomains..."
 
-awk '{print $1}' "$RESOLVED_FILE" | sort -u > "$ALIVE_FILE"
+#awk '{print $1}' "$RESOLVED_FILE" | sort -u > "$ALIVE_FILE"
 
 # -------------------------
 # Summary
 # -------------------------
 echo "----------------------------------"
 echo "[+] Raw subdomains:     $OUTPUT_FILE"
-echo "[+] Resolved subdomains:$RESOLVED_FILE"
-echo "[+] Alive subdomains:   $ALIVE_FILE"
+#echo "[+] Resolved subdomains:$RESOLVED_FILE"
+#echo "[+] Alive subdomains:   $ALIVE_FILE"
 echo "----------------------------------"
 
 echo "[✓] Done!"
