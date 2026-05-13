@@ -28,8 +28,8 @@ set -euo pipefail
 # Output structure:
 #   subdomains_output/
 #     ├── subdomains.txt            (raw + deduplicated)
-#     ├── subdomains_resolved.txt   (dnsx resolution output)
-#     └── subdomains_alive.txt      (active/valid hosts)
+#     ├── dns_records.txt           (dnsx resolution output)
+#     └── subdomains_resolved.txt   (resolved hosts)
 #
 # Usage:
 #   ./script.sh -s scope.txt
@@ -47,8 +47,8 @@ set -euo pipefail
 
 OUTPUT_DIR="subdomains"
 OUTPUT_FILE="$OUTPUT_DIR/subdomains.txt"
-# RESOLVED_FILE="$OUTPUT_DIR/subdomains_resolved.txt"
-# ALIVE_FILE="$OUTPUT_DIR/subdomains_alive.txt"
+DNS_RECORDS="$OUTPUT_DIR/dns_records.txt"
+RESOLVED_FILE="$OUTPUT_DIR/subdomains_resolved.txt"
 
 mkdir -p "$OUTPUT_DIR"
 > "$OUTPUT_FILE"
@@ -117,24 +117,24 @@ sort -u "$OUTPUT_FILE" -o "$OUTPUT_FILE"
 # -------------------------
 # DNS resolution (NEW)
 # -------------------------
-#echo "[*] Resolving subdomains with dnsx..."
+echo "[*] DNS records with dnsx..."
 
-#dnsx -l "$OUTPUT_FILE" -silent -resp -nc > "$RESOLVED_FILE"
+dnsx -l "$OUTPUT_FILE" -a -aaaa -cname -resp -silent -retry 2 -nc > "$DNS_RECORDS"
 
 # -------------------------
 # Extract alive hosts (NEW)
 # -------------------------
-#echo "[*] Extracting alive subdomains..."
+echo "[*] Extracting resolved subdomains..."
 
-#awk '{print $1}' "$RESOLVED_FILE" | sort -u > "$ALIVE_FILE"
+awk '{print $1}' "$DNS_RECORDS" | sort -u > "$RESOLVED_FILE"
 
 # -------------------------
 # Summary
 # -------------------------
 echo "----------------------------------"
-echo "[+] Raw subdomains:     $OUTPUT_FILE"
-#echo "[+] Resolved subdomains:$RESOLVED_FILE"
-#echo "[+] Alive subdomains:   $ALIVE_FILE"
+echo "[+] Raw subdomains:      $OUTPUT_FILE"
+echo "[+] DNS Records:         $DNS_RECORDS"
+echo "[+] Resolved subdomains: $RESOLVED_FILE"
 echo "----------------------------------"
 
 echo "[✓] Done!"

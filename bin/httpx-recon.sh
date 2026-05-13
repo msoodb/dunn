@@ -25,7 +25,10 @@ httpx -l "$INPUT" \
     -location \
     -follow-host-redirects \
     -silent \
-    -o "$OUTDIR/httpx-raw.txt"
+    -o "$OUTDIR/httpx_raw.txt"
 
 echo "[+] Done:"
-echo "    $OUTDIR/httpx-raw.txt"
+echo "    $OUTDIR/httpx_raw.txt"
+
+awk '{print $1}' "$OUTDIR/httpx_raw.txt" | sort -u > "$OUTDIR/httpx_urls.txt"
+echo "    $OUTDIR/httpx_urls.txt"

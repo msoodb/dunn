@@ -109,28 +109,101 @@ wafw00f "http://$TARGET" > "$OUTDIR/wafw00f_http.txt" 2>&1 || true
 # ----------------------------------
 # SUMMARY
 # ----------------------------------
+echo "[*] Building summary..."
+
+join_lines() {
+    local file="$1"
+
+    if [ -s "$file" ]; then
+        paste -sd ',' "$file"
+    else
+        printf "None"
+    fi
+}
+
+indent_file() {
+    local file="$1"
+
+    if [ -s "$file" ]; then
+        sed 's/^/  /' "$file"
+    else
+        printf "  None\n"
+    fi
+}
 
 {
-    echo "Target: $TARGET"
-    echo "Date: $(date)"
-    echo
-    echo "A records:"
-    cat "$OUTDIR/a_record.txt"
-    echo
-    echo "AAAA records:"
-    cat "$OUTDIR/aaaa_record.txt"
-    echo
-    echo "NS records:"
-    cat "$OUTDIR/ns.txt"
-    echo
-    echo "MX records:"
-    cat "$OUTDIR/mx.txt"
-    echo
-    echo "TXT records:"
-    cat "$OUTDIR/txt.txt"
-    echo
-    echo "WAF HTTPS result:"
-    grep -iE "is behind|seems to be behind|No WAF|firewall" "$OUTDIR/wafw00f_https.txt" || cat "$OUTDIR/wafw00f_https.txt"
+    printf "\n"
+    printf "DNS / IP / WAF INTELLIGENCE SUMMARY\n"
+    printf "===================================\n\n"
+
+    printf "%-16s: %s\n" "Target" "$TARGET"
+    printf "%-16s: %s\n" "Date" "$(date)"
+    printf "%-16s: %s\n\n" "Output Dir" "$OUTDIR"
+
+    printf "[HOST]\n"
+    indent_file "$OUTDIR/host.txt"
+    printf "\n"
+
+    A_RECORDS=$(join_lines "$OUTDIR/a_record.txt")
+    AAAA_RECORDS=$(join_lines "$OUTDIR/aaaa_record.txt")
+    CNAME_RECORDS=$(join_lines "$OUTDIR/cname.txt")
+    NS_RECORDS=$(join_lines "$OUTDIR/ns.txt")
+    MX_RECORDS=$(join_lines "$OUTDIR/mx.txt")
+
+    printf "[DNS RECORDS]\n"
+    printf "  %-8s : %s\n" "[A]" "$A_RECORDS"
+    printf "  %-8s : %s\n" "[AAAA]" "$AAAA_RECORDS"
+    printf "  %-8s : %s\n" "[CNAME]" "$CNAME_RECORDS"
+    printf "  %-8s : %s\n" "[NS]" "$NS_RECORDS"
+    printf "  %-8s : %s\n" "[MX]" "$MX_RECORDS"
+    printf "  %-8s :\n" "[TXT]"
+    if [ -s "$OUTDIR/txt.txt" ]; then
+	sed 's/^/             /' "$OUTDIR/txt.txt"
+    else
+	printf "             None\n"
+    fi
+    printf "\n"
+
+    printf "[WAF]\n"
+    grep -hiE \
+        "behind|cloudflare|akamai|imperva|sucuri|fastly|aws|No WAF" \
+        "$OUTDIR"/wafw00f_*.txt 2>/dev/null \
+        | sed 's/^/  /' || printf "  None\n"
+    printf "\n"
+
+    printf "[REVERSE DNS]\n"
+
+    if [ -s "$OUTDIR/ips.txt" ]; then
+        while read -r IP; do
+            PTR=$(dig +short -x "$IP" | paste -sd ',')
+
+            if [ -z "$PTR" ]; then
+                PTR="None"
+            fi
+
+            printf "  %-15s : %s\n" "$IP" "$PTR"
+        done < "$OUTDIR/ips.txt"
+    else
+        printf "  None\n"
+    fi
+
+    printf "\n"
+
+    printf "[ASN / NETWORK]\n"
+    grep -hiE \
+        "origin:|originas:|aut-num:|CIDR:|route:|inetnum:|netname:" \
+        "$OUTDIR/ip_whois.txt" 2>/dev/null \
+        | sed 's/^/  /' || printf "  None\n"
+    printf "\n"
+
+    printf "[INTERESTING TXT]\n"
+    grep -hiEi \
+        "spf|dmarc|dkim|google|amazonses|atlassian|docker|dropbox|facebook|zoom|github|slack" \
+        "$OUTDIR/txt.txt" 2>/dev/null \
+        | sed 's/^/  /' || printf "  None\n"
+
+    printf "\n"
+
 } > "$OUTDIR/summary.txt"
 
 echo "[+] Done."

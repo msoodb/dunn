@@ -1,49 +1,104 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Set the path to the configuration file
-SCRIPT_DIR="$(dirname "$0")"
-CONFIG_FILE="$SCRIPT_DIR/keywords.config"
+INPUT="${1:-}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+KEYWORDS_FILE="$SCRIPT_DIR/web_keywords.txt"
+OUTDIR="filtered_httpx"
 
-# Check if the correct number of arguments is provided
-if [ "$#" -ne 1 ]; then
-  echo "Usage: $0 <host_file>"
-  exit 1
+if [[ -z "$INPUT" || ! -f "$INPUT" ]]; then
+    echo "Usage: $0 <httpx-raw.txt>"
+    exit 1
 fi
 
-# Input file
-HTTPS_FILE="$1"
+mkdir -p "$OUTDIR"/{keywords,status,technologies}
 
-# Output directory for filtered HTTPSs
-OUTPUT_DIR="filtered_httpx"
-mkdir -p "$OUTPUT_DIR"
+echo "[*] Filtering: $INPUT"
 
-# Ensure the HTTPS file exists
-if [ ! -f "$HTTPS_FILE" ]; then
-  echo "Error: File $HTTPS_FILE not found."
-  exit 1
+# -----------------------------
+# Keyword filters
+# -----------------------------
+if [[ -f "$KEYWORDS_FILE" ]]; then
+    while IFS= read -r KEYWORD; do
+        [[ -z "$KEYWORD" || "$KEYWORD" =~ ^# ]] && continue
+
+        SAFE_NAME="$(echo "$KEYWORD" | tr -cs 'A-Za-z0-9._-' '_' | sed 's/^_//;s/_$//')"
+        OUT="$OUTDIR/keywords/${SAFE_NAME}.txt"
+
+        grep -iE "$KEYWORD" "$INPUT" | sort -u > "$OUT" || true
+        [[ -s "$OUT" ]] || rm -f "$OUT"
+    done < "$KEYWORDS_FILE"
 fi
 
-# Ensure the config file exists
-if [ ! -f "$CONFIG_FILE" ]; then
-  echo "Error: Config file $CONFIG_FILE not found."
-  exit 1
-fi
-
-# Read keywords from the config file
-mapfile -t KEYWORDS < "$CONFIG_FILE"
-
-# Process each keyword
-for KEYWORD in "${KEYWORDS[@]}"; do
-  OUTPUT_FILE="$OUTPUT_DIR/$KEYWORD.txt"
-  grep -i "$KEYWORD" "$HTTPS_FILE" > "$OUTPUT_FILE"
-  
-  # Check if the file is empty and remove it if so
-  if [ ! -s "$OUTPUT_FILE" ]; then
-    rm "$OUTPUT_FILE"
-  else
-    echo "Filtered HTTPSs for keyword '$KEYWORD' saved to $OUTPUT_FILE."
-  fi
+# -----------------------------
+# Status code filters
+# Works with normal httpx output containing [200], [403], etc.
+# -----------------------------
+for CODE in 200 201 204 301 302 307 308 400 401 403 404 500 502 503; do
+    OUT="$OUTDIR/status/${CODE}.txt"
+    grep -E "\[$CODE\]" "$INPUT" | sort -u > "$OUT" || true
+    [[ -s "$OUT" ]] || rm -f "$OUT"
 done
 
-# Display summary
-echo "Filtered HTTPSs have been saved to the $OUTPUT_DIR directory."
+# -----------------------------
+# Technology filters
+# Requires httpx with -tech-detect
+# -----------------------------
+TECHS=(
+    "wordpress"
+    "drupal"
+    "joomla"
+    "nginx"
+    "apache"
+    "iis"
+    "cloudflare"
+    "akamai"
+    "fastly"
+    "aws"
+    "azure"
+    "google"
+    "spring"
+    "tomcat"
+    "jenkins"
+    "grafana"
+    "kibana"
+    "swagger"
+    "graphql"
+    "next.js"
+    "react"
+    "vue"
+    "angular"
+    "php"
+    "laravel"
+    "django"
+    "express"
+)
+
+for TECH in "${TECHS[@]}"; do
+    SAFE_NAME="$(echo "$TECH" | tr -cs 'A-Za-z0-9._-' '_' | sed 's/^_//;s/_$//')"
+    OUT="$OUTDIR/technologies/${SAFE_NAME}.txt"
+
+    grep -i "$TECH" "$INPUT" | sort -u > "$OUT" || true
+    [[ -s "$OUT" ]] || rm -f "$OUT"
+done
+
+# -----------------------------
+# High-value combined filter
+# -----------------------------
+grep -iE \
+'api|admin|auth|login|portal|console|dashboard|dev|qa|test|uat|stage|staging|internal|crm|cms|sso|oauth|graphql|swagger|jenkins|grafana|kibana|jira|confluence|git|vpn|upload|download|file|backup|debug|monitor|metrics|health' \
+"$INPUT" | sort -u > "$OUTDIR/interesting.txt" || true
+
+[[ -s "$OUTDIR/interesting.txt" ]] || rm -f "$OUTDIR/interesting.txt"
+
+# -----------------------------
+# Summary
+# -----------------------------
+echo
+echo "[+] Done."
+echo "[+] Output directory: $OUTDIR"
+echo
+
+find "$OUTDIR" -type f | sort | while read -r FILE; do
+    printf "%5s  %s\n" "$(wc -l < "$FILE")" "$FILE"
+done
