@@ -1,0 +1,5 @@
+ARGS=(
+  -X GET
+  -H "X-Forwarded-For: 127.0.0.1"
+  -H "X-Real-IP: 127.0.0.1"
+)

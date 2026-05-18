@@ -1,0 +1,4 @@
+ARGS=(
+  -X GET
+  -H "Ocp-Apim-Subscription-Key: fake-key-test"
+)

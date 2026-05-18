@@ -1,0 +1,4 @@
+ARGS=(
+  -X GET
+  -H "Authorization: Bearer aaa.bbb.ccc"
+)

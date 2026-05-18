@@ -1,0 +1,4 @@
+ARGS=(
+  -X GET
+  -H "authorization: Bearer fake-token-test"
+)

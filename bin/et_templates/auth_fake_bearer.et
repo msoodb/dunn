@@ -1,0 +1,3 @@
+ARGS=(
+  -H "Authorization: Bearer fake-token-test"
+)

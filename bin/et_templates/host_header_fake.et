@@ -1,0 +1,4 @@
+ARGS=(
+  -X GET
+  -H "Host: evil.example"
+)

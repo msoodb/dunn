@@ -1,0 +1,5 @@
+ARGS=(
+  -X POST
+  -H "Content-Type: application/json"
+  --data '{"a":{"b":{"c":{"d":{"e":{"f":"test"}}}}}}'
+)

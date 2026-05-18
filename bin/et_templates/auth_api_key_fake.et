@@ -1,0 +1,4 @@
+ARGS=(
+  -X GET
+  -H "API-Key: fake-key-test"
+)

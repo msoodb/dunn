@@ -1,0 +1,5 @@
+ARGS=(
+  -X OPTIONS
+  -H "Origin: https://evil.example"
+  -H "Access-Control-Request-Method: POST"
+)

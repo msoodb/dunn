@@ -1,0 +1,4 @@
+ARGS=(
+  -X GET
+  -H "Authorization: Basic dGVzdDp0ZXN0"
+)

@@ -1,0 +1,4 @@
+ARGS=(
+  -X GET
+  -H "Accept: text/html"
+)

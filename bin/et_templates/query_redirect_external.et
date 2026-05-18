@@ -1,0 +1,5 @@
+ARGS=(
+  -X GET
+  --get
+  --data-urlencode "redirect=https://example.com"
+)
