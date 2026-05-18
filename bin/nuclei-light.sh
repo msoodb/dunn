@@ -14,7 +14,7 @@ set -euo pipefail
 # ------------------------------------------------------------
 
 INPUT="${1:-}"
-OUTDIR="inventory/nuclei"
+OUTDIR="nuclei"
 
 if [[ -z "$INPUT" || ! -f "$INPUT" ]]; then
     echo "Usage: $0 <urls_or_hosts_file>"

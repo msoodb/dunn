@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
+set -uo pipefail
 
 INPUT="${1:?Usage: $0 <url-or-url-file>}"
 
@@ -24,6 +24,7 @@ download_one() {
 safe_filename() {
     local URL="$1"
     local NAME
+    local EXT
 
     NAME=$(basename "${URL%%\?*}")
 
@@ -31,44 +32,77 @@ safe_filename() {
         NAME="index.html"
     fi
 
+    # remove dangerous chars
+    NAME=$(echo "$NAME" | tr '/:?&=#%' '_')
+
+    # keep extension if possible
+    EXT="${NAME##*.}"
+
+    # filename too long protection
+    if [[ ${#NAME} -gt 80 ]]; then
+        NAME="${NAME:0:80}"
+
+        if [[ -n "$EXT" && "$EXT" != "$NAME" ]]; then
+            NAME="${NAME}.${EXT}"
+        fi
+    fi
+
     echo "$NAME"
 }
 
 if [[ -f "$INPUT" ]]; then
-    OUTPUT_DIR="${INPUT}_dir"
-    LOG_FILE="failed_${INPUT}.log"
+
+    BASE_NAME="$(basename "$INPUT")"
+
+    OUTPUT_DIR="${BASE_NAME}_dir"
+    LOG_FILE="failed_${BASE_NAME}.log"
 
     mkdir -p "$OUTPUT_DIR"
     > "$LOG_FILE"
 
     while IFS= read -r URL; do
+
         [[ -z "$URL" ]] && continue
         [[ "$URL" =~ ^# ]] && continue
 
         HASH=$(echo -n "$URL" | md5sum | awk '{print $1}')
         NAME=$(safe_filename "$URL")
+
         OUTPUT_FILE="$OUTPUT_DIR/${HASH}_${NAME}"
 
         echo "[*] Downloading: $URL"
 
-        if ! download_one "$URL" "$OUTPUT_FILE"; then
+        if download_one "$URL" "$OUTPUT_FILE"; then
+            echo "[+] OK: $OUTPUT_FILE"
+        else
+            echo "[-] FAILED: $URL"
+
             echo "$URL" >> "$LOG_FILE"
-            rm -f "$OUTPUT_FILE"
+
+            rm -f "$OUTPUT_FILE" 2>/dev/null || true
+
+            continue
         fi
 
     done < "$INPUT"
 
+    echo
     echo "[+] Bulk download complete."
     echo "[+] Output dir: $OUTPUT_DIR"
     echo "[+] Failed log: $LOG_FILE"
 
 else
+
     URL="$INPUT"
+
     OUTPUT_FILE=$(safe_filename "$URL")
 
     echo "[*] Downloading single URL: $URL"
 
-    download_one "$URL" "$OUTPUT_FILE"
-
-    echo "[+] Saved as: $OUTPUT_FILE"
+    if download_one "$URL" "$OUTPUT_FILE"; then
+        echo "[+] Saved as: $OUTPUT_FILE"
+    else
+        echo "[-] Download failed"
+        exit 1
+    fi
 fi

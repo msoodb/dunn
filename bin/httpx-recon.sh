@@ -4,16 +4,36 @@ set -euo pipefail
 # “Is an HTTP/HTTPS service running there, and if yes, what does it look like?”
 
 INPUT="${1:-}"
-OUTDIR="httpx"
 
 if [[ -z "$INPUT" || ! -f "$INPUT" ]]; then
     echo "Usage: $0 <subdomains_file>"
     exit 1
 fi
 
+# ----------------------------------
+# Paths
+# ----------------------------------
+
+INPUT_NAME=$(basename "$INPUT")
+INPUT_BASE="${INPUT_NAME%.*}"
+
+BASE_OUTDIR="httpx"
+OUTDIR="$BASE_OUTDIR/$INPUT_BASE"
+
 mkdir -p "$OUTDIR"
 
-echo "[*] Running httpx..."
+# ----------------------------------
+# Files
+# ----------------------------------
+
+RAW_OUTPUT="$OUTDIR/httpx_raw.txt"
+URLS_OUTPUT="$OUTDIR/httpx_urls.txt"
+
+# ----------------------------------
+# Run httpx
+# ----------------------------------
+
+echo "[*] Running httpx on: $INPUT"
 
 httpx -l "$INPUT" \
     -sc \
@@ -25,10 +45,11 @@ httpx -l "$INPUT" \
     -location \
     -follow-host-redirects \
     -silent \
-    -o "$OUTDIR/httpx_raw.txt"
+    -o "$RAW_OUTPUT"
 
 echo "[+] Done:"
-echo "    $OUTDIR/httpx_raw.txt"
+echo "    $RAW_OUTPUT"
 
-awk '{print $1}' "$OUTDIR/httpx_raw.txt" | sort -u > "$OUTDIR/httpx_urls.txt"
-echo "    $OUTDIR/httpx_urls.txt"
+awk '{print $1}' "$RAW_OUTPUT" | sort -u > "$URLS_OUTPUT"
+
+echo "    $URLS_OUTPUT"

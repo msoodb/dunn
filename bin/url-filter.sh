@@ -18,7 +18,7 @@ set -euo pipefail
 # --------------------------------------------------
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_FILE="$SCRIPT_DIR/url_patterns.txt"
+CONFIG_FILE="$SCRIPT_DIR/web_keywords.txt"
 
 URL_FILE="${1:-}"
 OUTPUT_DIR="filtered_urls"
